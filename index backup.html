@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CR Election 2026</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+        :root {
+            --cream: #f7f0e7;
+            --cream-light: #fffaf4;
+            --card: rgba(255, 252, 247, 0.9);
+            --red: #7d2838;
+            --red-dark: #641e2c;
+            --red-soft: #f2dfe1;
+            --text: #2c2422;
+            --muted: #887a75;
+            --border: #e8dcd2;
+            --gold: #a88658;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(125, 40, 56, 0.09),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 90% 15%,
+                    rgba(168, 134, 88, 0.08),
+                    transparent 30%
+                ),
+                var(--cream);
+
+            color: var(--text);
+            font-family: "DM Sans", sans-serif;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.15;
+
+            background-image:
+                radial-gradient(
+                    rgba(80, 50, 40, 0.12) 0.7px,
+                    transparent 0.7px
+                );
+
+            background-size: 7px 7px;
+        }
+
+        .container {
+            width: min(1120px, 92%);
+            margin: auto;
+            padding: 28px 0 60px;
+        }
+
+        /* HEADER */
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .logo {
+            width: 46px;
+            height: 46px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 14px;
+
+            background: var(--red);
+            color: white;
+
+            font-size: 20px;
+            font-weight: 700;
+
+            box-shadow:
+                0 10px 28px rgba(125, 40, 56, 0.2);
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-sub {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .live {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 8px 13px;
+
+            border-radius: 100px;
+
+            background: #f2e5dc;
+            border: 1px solid #e4d2c6;
+
+            color: var(--red);
+
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #b64e5d;
+
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: 0.35;
+            }
+        }
+
+        /* HERO */
+
+        .hero {
+            text-align: center;
+            padding: 72px 0 55px;
+        }
+
+        .eyebrow {
+            color: var(--red);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .hero h1 {
+            margin-top: 18px;
+
+            font-family: "Playfair Display", serif;
+
+            font-size: clamp(50px, 8vw, 86px);
+            line-height: 0.95;
+
+            letter-spacing: -3px;
+            font-weight: 600;
+        }
+
+        .hero h1 span {
+            color: var(--red);
+        }
+
+        .hero p {
+            max-width: 580px;
+            margin: 22px auto 0;
+
+            color: var(--muted);
+
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        /* LOGIN */
+
+        .login-card {
+            width: min(440px, 100%);
+            margin: 0 auto 25px;
+        }
+
+        .card {
+            padding: 27px;
+
+            border-radius: 24px;
+
+            background: var(--card);
+            border: 1px solid var(--border);
+
+            box-shadow:
+                0 20px 60px rgba(82, 45, 30, 0.07);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-family: "Playfair Display", serif;
+            font-size: 21px;
+            font-weight: 600;
+        }
+
+        .card-header span {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .login-description {
+            text-align: center;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            line-height: 1.7;
+
+            margin-bottom: 20px;
+        }
+
+        .google-button {
+            width: 100%;
+
+            padding: 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 13px;
+
+            background: white;
+            color: var(--text);
+
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+
+            transition: 0.2s;
+        }
+
+        .google-button:hover {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 10px 25px rgba(70, 40, 30, 0.08);
+        }
+
+        .google-icon {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .message {
+            margin-top: 12px;
+
+            text-align: center;
+
+            color: var(--red);
+
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        /* ELECTION */
+
+        .hidden {
+            display: none !important;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            padding: 20px;
+
+            border-radius: 19px;
+
+            background: rgba(255, 253, 249, 0.7);
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            color: var(--muted);
+
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .stat-value {
+            margin-top: 7px;
+
+            color: var(--red);
+
+            font-family: "Playfair Display", serif;
+            font-size: 25px;
+            font-weight: 600;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* CANDIDATES */
+
+        .candidates {
+            display: grid;
+            gap: 11px;
+        }
+
+        .candidate {
+            padding: 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 17px;
+
+            background: var(--cream-light);
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .candidate:hover {
+            transform: translateY(-2px);
+            border-color: #c88a94;
+        }
+
+        .candidate.selected {
+            background: var(--red-soft);
+            border-color: var(--red);
+
+            box-shadow:
+                0 8px 25px rgba(125, 40, 56, 0.08);
+        }
+
+        .candidate.disabled {
+            cursor: default;
+            opacity: 0.55;
+        }
+
+        .candidate-inner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+
+            flex-shrink: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #8b3a49,
+                    #60202c
+                );
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+        .name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .tagline {
+            margin-top: 4px;
+
+            color: var(--muted);
+
+            font-size: 9px;
+        }
+
+        .radio {
+            width: 20px;
+            height: 20px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1.8px solid #bdaea5;
+            border-radius: 50%;
+        }
+
+        .candidate.selected .radio {
+            border-color: var(--red);
+        }
+
+        .candidate.selected .radio::after {
+            content: "";
+
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: var(--red);
+        }
+
+        /* BUTTON */
+
+        .vote-button {
+            width: 100%;
+
+            margin-top: 18px;
+            padding: 15px;
+
+            border: 0;
+            border-radius: 13px;
+
+            background: var(--red);
+            color: white;
+
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 10px 25px rgba(125, 40, 56, 0.16);
+
+            transition: 0.2s;
+        }
+
+        .vote-button:hover:not(:disabled) {
+            background: var(--red-dark);
+            transform: translateY(-1px);
+        }
+
+        .vote-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* ALREADY VOTED */
+
+        .voted-box {
+            padding: 16px;
+
+            margin-bottom: 18px;
+
+            border-radius: 16px;
+
+            background: #f3e8dd;
+            border: 1px solid #e5d3c7;
+
+            color: var(--red);
+
+            text-align: center;
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .voted-box strong {
+            display: block;
+
+            margin-bottom: 4px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 18px;
+        }
+
+        /* RESULTS */
+
+        .leader {
+            padding: 16px;
+
+            margin-bottom: 24px;
+
+            border-radius: 16px;
+
+            background: #f5e9df;
+            border: 1px solid #ead5ca;
+        }
+
+        .leader-label {
+            color: var(--red);
+
+            font-size: 9px;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        .leader-name {
+            margin-top: 5px;
+
+            font-family: "Playfair Display", serif;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .result {
+            margin-bottom: 21px;
+        }
+
+        .result-head {
+            display: flex;
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+        }
+
+        .result-name {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .result-votes {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .bar {
+            height: 8px;
+
+            overflow: hidden;
+
+            border-radius: 100px;
+
+            background: #eee2d8;
+        }
+
+        .bar-fill {
+            height: 100%;
+
+            width: 0;
+
+            border-radius: 100px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--red),
+                    #a94f5e
+                );
+
+            transition: width 0.7s ease;
+        }
+
+        .percent {
+            margin-top: 5px;
+
+            text-align: right;
+
+            color: var(--muted);
+
+            font-size: 9px;
+        }
+
+        .total {
+            padding-top: 17px;
+
+            border-top: 1px solid var(--border);
+
+            text-align: center;
+
+            color: var(--muted);
+
+            font-size: 11px;
+        }
+
+        .total strong {
+            color: var(--red);
+        }
+
+        footer {
+            margin-top: 35px;
+
+            text-align: center;
+
+            color: #9b8c85;
+
+            font-size: 9px;
+            letter-spacing: 0.5px;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 800px) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 55px 0 45px;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            header {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <div class="brand">
+
+            <div class="logo">
+                ✓
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    CR ELECTION
+                </div>
+
+                <div class="brand-sub">
+                    Class Representative • 2026
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="live">
+
+            <span class="live-dot"></span>
+
+            ELECTION LIVE
+
+        </div>
+
+    </header>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="eyebrow">
+            FIRST-PAST-THE-POST • OFFICIAL CLASS ELECTION
+        </div>
+
+        <h1>
+            Your Voice.<br>
+            <span>Your Choice.</span>
+        </h1>
+
+        <p>
+            Choose one candidate to represent your class.
+            Every voter gets one final vote.
+        </p>
+
+    </section>
+
+
+    <!-- GOOGLE LOGIN -->
+
+    <section
+        id="loginSection"
+        class="card login-card"
+    >
+
+        <div class="card-header">
+
+            <h2>
+                Voter Login
+            </h2>
+
+            <span>
+                Secure access
+            </span>
+
+        </div>
+
+        <p class="login-description">
+            Sign in with your Google account to enter
+            the election.
+        </p>
+
+        <button
+    id="googleLoginButton"
+    class="google-button"
+    onclick="loginWithGoogle()"
+>
+    <span class="google-icon">G</span>
+    CONTINUE WITH GOOGLE
+</button>
+
+        <div
+            id="loginMessage"
+            class="message"
+        ></div>
+
+    </section>
+
+
+    <!-- ELECTION -->
+
+    <section
+        id="electionSection"
+        class="hidden"
+    >
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Election
+                </div>
+
+                <div
+                    id="statusText"
+                    class="stat-value"
+                >
+                    LIVE
+                </div>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Votes Cast
+                </div>
+
+                <div
+                    id="totalVotes"
+                    class="stat-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    Voting System
+                </div>
+
+                <div class="stat-value">
+                    FPTP
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="grid">
+
+
+            <!-- VOTING CARD -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>
+                        Choose your CR
+                    </h2>
+
+                    <span>
+                        ONE VOTE
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="votedMessage"
+                    class="voted-box hidden"
+                >
+
+                    <strong>
+                        ✓ Vote Submitted
+                    </strong>
+
+                    Your vote has already been recorded.
+                    <br>
+                    It cannot be changed.
+
+                </div>
+
+
+                <div
+                    id="candidates"
+                    class="candidates"
+                >
+                    Loading candidates...
+                </div>
+
+
+                <button
+                    id="voteButton"
+                    class="vote-button"
+                    disabled
+                >
+                    SELECT A CANDIDATE
+                </button>
+
+            </div>
+
+
+            <!-- RESULTS CARD -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>
+                        Live Results
+                    </h2>
+
+                    <span>
+                        Real-time
+                    </span>
+
+                </div>
+
+
+                <div class="leader">
+
+                    <div class="leader-label">
+                        CURRENT LEADER
+                    </div>
+
+                    <div
+                        id="leaderName"
+                        class="leader-name"
+                    >
+                        No votes yet
+                    </div>
+
+                </div>
+
+
+                <div id="results">
+                    Loading results...
+                </div>
+
+
+                <div class="total">
+
+                    Total votes:
+                    <strong id="totalVotesBottom">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        CR Election System • Secure FPTP Voting • 2026
+    </footer>
+
+</div>
+
+
+<script>
+
+    /* ==================================================
+       SUPABASE CONFIG
+       ================================================== */
+
+    const SUPABASE_URL =
+        "https://hdviwyziysbddleqkfbt.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_RfFJnW4wlKZEp0kh3BgRWA_8DJk0OEN";
+
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    /* ==================================================
+       GLOBAL VARIABLES
+       ================================================== */
+
+    let currentUser = null;
+
+    let selectedCandidate = null;
+
+    let hasVoted = false;
+
+    let realtimeChannel = null;
+
+
+    /* ==================================================
+       GOOGLE LOGIN
+       ================================================== */
+
+    async function loginWithGoogle() {
+
+        const button =
+            document.getElementById(
+                "googleLoginButton"
+            );
+
+        const message =
+            document.getElementById(
+                "loginMessage"
+            );
+
+
+        button.disabled = true;
+
+        button.innerHTML =
+            "CONNECTING TO GOOGLE...";
+
+        message.textContent = "";
+
+
+        const {
+            error
+        } =
+            await supabaseClient.auth.signInWithOAuth({
+
+                provider: "google"
+
+            });
+
+
+        if (error) {
+
+            console.error(error);
+
+            message.textContent =
+                error.message;
+
+            button.disabled = false;
+
+            button.innerHTML =
+                '<span class="google-icon">G</span> CONTINUE WITH GOOGLE';
+                document
+    .getElementById("googleLoginButton")
+    .addEventListener(
+        "click",
+        loginWithGoogle
+    );
+
+        }
+
+    }
+
+
+    /* ==================================================
+       SHOW ELECTION
+       ================================================== */
+
+    async function showElection(session) {
+
+        if (!session || !session.user) {
+            return;
+        }
+
+
+        currentUser =
+            session.user;
+
+
+        document
+            .getElementById("loginSection")
+            .classList.add("hidden");
+
+
+        document
+            .getElementById("electionSection")
+            .classList.remove("hidden");
+
+
+        await loadCandidates();
+
+        await checkExistingVote();
+
+        await loadResults();
+
+        startRealtime();
+
+    }
+
+
+    /* ==================================================
+       INITIAL AUTH CHECK
+       ================================================== */
+
+    async function initializeAuth() {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+
+        if (error) {
+
+            console.error(error);
+
+            return;
+
+        }
+
+
+        if (data.session) {
+
+            await showElection(
+                data.session
+            );
+
+        }
+
+    }
+
+
+    /* ==================================================
+       AUTH STATE LISTENER
+       ================================================== */
+
+    supabaseClient.auth.onAuthStateChange(
+        (event, session) => {
+
+            if (
+                session &&
+                session.user &&
+                !currentUser
+            ) {
+
+                setTimeout(() => {
+
+                    showElection(
+                        session
+                    );
+
+                }, 0);
+
+            }
+
+        }
+    );
+
+
+    /* ==================================================
+       LOAD CANDIDATES
+       ================================================== */
+
+    async function loadCandidates() {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("candidates")
+                .select("*")
+                .order("id");
+
+
+        const container =
+            document.getElementById(
+                "candidates"
+            );
+
+
+        if (error) {
+
+            console.error(error);
+
+            container.textContent =
+                "Unable to load candidates.";
+
+            return;
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        data.forEach(candidate => {
+
+            const initials =
+                candidate.name
+                    .split(" ")
+                    .map(word => word[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+
+            const item =
+                document.createElement("div");
+
+
+            item.className =
+                "candidate";
+
+
+            item.innerHTML = `
+
+                <div class="candidate-inner">
+
+                    <div class="avatar">
+                        ${escapeHTML(initials)}
+                    </div>
+
+                    <div class="info">
+
+                        <div class="name">
+                            ${escapeHTML(candidate.name)}
+                        </div>
+
+                        <div class="tagline">
+                            ${escapeHTML(
+                                candidate.tagline || ""
+                            )}
+                        </div>
+
+                    </div>
+
+                    <div class="radio"></div>
+
+                </div>
+
+            `;
+
+
+            if (!hasVoted) {
+
+                item.addEventListener(
+                    "click",
+                    () => {
+
+                        document
+                            .querySelectorAll(
+                                ".candidate"
+                            )
+                            .forEach(card => {
+
+                                card.classList.remove(
+                                    "selected"
+                                );
+
+                            });
+
+
+                        item.classList.add(
+                            "selected"
+                        );
+
+
+                        selectedCandidate =
+                            candidate.id;
+
+
+                        const button =
+                            document.getElementById(
+                                "voteButton"
+                            );
+
+
+                        button.disabled =
+                            false;
+
+
+                        button.textContent =
+                            "CAST FINAL VOTE";
+
+                    }
+                );
+
+            }
+
+
+            container.appendChild(item);
+
+        });
+
+    }
+
+
+    /* ==================================================
+       CHECK IF USER ALREADY VOTED
+       ================================================== */
+
+    async function checkExistingVote() {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("votes")
+                .select("id")
+                .eq(
+                    "voter_id",
+                    currentUser.id
+                )
+                .maybeSingle();
+
+
+        if (error) {
+
+            console.error(error);
+
+            return;
+
+        }
+
+
+        if (data) {
+
+            hasVoted = true;
+
+            selectedCandidate = null;
+
+
+            document
+                .getElementById(
+                    "votedMessage"
+                )
+                .classList.remove(
+                    "hidden"
+                );
+
+
+            const button =
+                document.getElementById(
+                    "voteButton"
+                );
+
+
+            button.disabled = true;
+
+            button.textContent =
+                "✓ VOTE ALREADY SUBMITTED";
+
+
+            document
+                .querySelectorAll(
+                    ".candidate"
+                )
+                .forEach(card => {
+
+                    card.classList.add(
+                        "disabled"
+                    );
+
+                });
+
+        }
+
+    }
+
+
+    /* ==================================================
+       CONFIRM VOTE
+       ================================================== */
+
+    document
+        .getElementById("voteButton")
+        .addEventListener(
+            "click",
+            confirmVote
+        );
+
+
+    function confirmVote() {
+
+        if (
+            !selectedCandidate ||
+            hasVoted
+        ) {
+
+            return;
+
+        }
+
+
+        const confirmed =
+            window.confirm(
+
+                "FINAL CONFIRMATION\n\n" +
+
+                "You are about to submit your vote.\n\n" +
+
+                "Once submitted, this vote CANNOT be changed.\n\n" +
+
+                "Do you want to continue?"
+
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        submitVote();
+
+    }
+
+
+    /* ==================================================
+       SUBMIT VOTE
+       ================================================== */
+
+    async function submitVote() {
+
+        const button =
+            document.getElementById(
+                "voteButton"
+            );
+
+
+        button.disabled = true;
+
+        button.textContent =
+            "SUBMITTING...";
+
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("votes")
+                .insert({
+
+                    voter_id:
+                        currentUser.id,
+
+                    candidate_id:
+                        selectedCandidate
+
+                });
+
+
+        if (error) {
+
+            console.error(error);
+
+
+            if (
+                error.code === "23505"
+            ) {
+
+                hasVoted = true;
+
+                button.textContent =
+                    "✓ VOTE ALREADY SUBMITTED";
+
+
+                document
+                    .getElementById(
+                        "votedMessage"
+                    )
+                    .classList.remove(
+                        "hidden"
+                    );
+
+
+            } else {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "CAST FINAL VOTE";
+
+
+                alert(
+                    "Vote could not be submitted.\n\nPlease try again."
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        hasVoted = true;
+
+
+        button.textContent =
+            "✓ VOTE SUBMITTED";
+
+
+        document
+            .getElementById(
+                "votedMessage"
+            )
+            .classList.remove(
+                "hidden"
+            );
+
+
+        document
+            .querySelectorAll(
+                ".candidate"
+            )
+            .forEach(card => {
+
+                card.classList.add(
+                    "disabled"
+                );
+
+                card.style.pointerEvents =
+                    "none";
+
+            });
+
+
+        alert(
+            "✓ VOTE SUBMITTED\n\n" +
+            "Your vote has been securely recorded.\n\n" +
+            "This vote is final and cannot be changed."
+        );
+
+
+        await loadResults();
+
+    }
+
+
+    /* ==================================================
+       LOAD LIVE RESULTS
+       ================================================== */
+
+    async function loadResults() {
+
+        const {
+            data: candidates,
+            error: candidateError
+        } =
+            await supabaseClient
+                .from("candidates")
+                .select("*")
+                .order("id");
+
+
+        const {
+            data: votes,
+            error: voteError
+        } =
+            await supabaseClient
+                .from("votes")
+                .select("candidate_id");
+
+
+        if (
+            candidateError ||
+            voteError
+        ) {
+
+            console.error(
+                candidateError ||
+                voteError
+            );
+
+            return;
+
+        }
+
+
+        const counts = {};
+
+
+        candidates.forEach(candidate => {
+
+            counts[candidate.id] = 0;
+
+        });
+
+
+        votes.forEach(vote => {
+
+            if (
+                counts[vote.candidate_id]
+                !== undefined
+            ) {
+
+                counts[
+                    vote.candidate_id
+                ]++;
+
+            }
+
+        });
+
+
+        const total =
+            votes.length;
+
+
+        const sorted =
+            [...candidates].sort(
+                (a, b) =>
+                    counts[b.id] -
+                    counts[a.id]
+            );
+
+
+        document.getElementById(
+            "totalVotes"
+        ).textContent =
+            total;
+
+
+        document.getElementById(
+            "totalVotesBottom"
+        ).textContent =
+            total;
+
+
+        const results =
+            document.getElementById(
+                "results"
+            );
+
+
+        results.innerHTML = "";
+
+
+        sorted.forEach(candidate => {
+
+            const voteCount =
+                counts[candidate.id];
+
+
+            const percentage =
+                total === 0
+                    ? 0
+                    : Math.round(
+                        (
+                            voteCount /
+                            total
+                        ) * 100
+                    );
+
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "result";
+
+
+            row.innerHTML = `
+
+                <div class="result-head">
+
+                    <span class="result-name">
+                        ${escapeHTML(
+                            candidate.name
+                        )}
+                    </span>
+
+                    <span class="result-votes">
+                        ${voteCount}
+                        vote${voteCount === 1 ? "" : "s"}
+                    </span>
+
+                </div>
+
+                <div class="bar">
+
+                    <div
+                        class="bar-fill"
+                        style="width:${percentage}%"
+                    ></div>
+
+                </div>
+
+                <div class="percent">
+                    ${percentage}%
+                </div>
+
+            `;
+
+
+            results.appendChild(row);
+
+        });
+
+
+        if (
+            sorted.length &&
+            total > 0
+        ) {
+
+            const leader =
+                sorted[0];
+
+
+            document.getElementById(
+                "leaderName"
+            ).textContent =
+                leader.name +
+                " • " +
+                counts[leader.id] +
+                " vote" +
+                (
+                    counts[leader.id] === 1
+                        ? ""
+                        : "s"
+                );
+
+        } else {
+
+            document.getElementById(
+                "leaderName"
+            ).textContent =
+                "No votes yet";
+
+        }
+
+    }
+
+
+    /* ==================================================
+       REAL-TIME VOTES
+       ================================================== */
+
+    function startRealtime() {
+
+        if (realtimeChannel) {
+            return;
+        }
+
+
+        realtimeChannel =
+            supabaseClient
+                .channel(
+                    "cr-election-live-results"
+                )
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "votes"
+                    },
+                    () => {
+
+                        loadResults();
+
+                    }
+                )
+                .subscribe();
+
+    }
+
+
+    /* ==================================================
+       SAFE TEXT
+       ================================================== */
+
+    function escapeHTML(value) {
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* ==================================================
+       START APP
+       ================================================== */
+
+    initializeAuth();
+
+</script>
+
+</body>
+</html>
