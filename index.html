@@ -483,6 +483,129 @@
             cursor: not-allowed;
         }
 
+
+        .voter-gate {
+            width: min(440px, 100%);
+            margin: 0 auto 25px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: white;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .text-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(168, 134, 88, 0.12);
+        }
+
+        .primary-button {
+            width: 100%;
+            margin-top: 13px;
+            padding: 14px;
+            border: 0;
+            border-radius: 13px;
+            background: var(--red);
+            color: white;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .primary-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .profile-card {
+            margin: 0 auto 25px;
+        }
+
+        .candidate-profile {
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: var(--cream-light);
+            margin-bottom: 12px;
+        }
+
+        .candidate-profile-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .candidate-profile-photo {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            object-fit: cover;
+            background: var(--red-soft);
+            display: grid;
+            place-items: center;
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .candidate-profile h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 18px;
+        }
+
+        .candidate-profile p {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.65;
+            margin-top: 5px;
+        }
+
+        .profile-editor {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+        }
+
+        .profile-editor textarea {
+            width: 100%;
+            min-height: 95px;
+            resize: vertical;
+            padding: 13px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            font-family: inherit;
+            font-size: 12px;
+            margin-top: 7px;
+        }
+
+        .profile-editor input[type="url"] {
+            margin-top: 7px;
+        }
+
+        .small-note {
+            color: var(--muted);
+            font-size: 10px;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
         /* ALREADY VOTED */
 
         .voted-box {
@@ -754,7 +877,65 @@
     </section>
 
 
+    <!-- VOTER ID GATE -->
+
+    <section
+        id="voterGate"
+        class="card voter-gate hidden"
+    >
+
+        <div class="card-header">
+            <h2>Verify Voter</h2>
+            <span>ONE-TIME SETUP</span>
+        </div>
+
+        <p class="login-description">
+            Enter your Institute ID to continue.
+        </p>
+
+        <label class="field-label" for="instituteId">
+            INSTITUTE ID
+        </label>
+
+        <input
+            id="instituteId"
+            class="text-input"
+            type="text"
+            maxlength="11"
+            placeholder="ABCDE-12345"
+            autocomplete="off"
+            spellcheck="false"
+        >
+
+        <button
+            id="verifyIdButton"
+            class="primary-button"
+            type="button"
+        >
+            VERIFY INSTITUTE ID
+        </button>
+
+        <div id="voterMessage" class="message"></div>
+
+        <div class="small-note">
+            Format required: 5 capital letters, a hyphen, and 5 digits.
+        </div>
+
+    </section>
+
+
     <!-- ELECTION -->
+
+
+        <div class="card profile-card">
+            <div class="card-header">
+                <h2>Meet the Candidates</h2>
+                <span>PROFILES</span>
+            </div>
+            <div id="candidateProfiles">
+                Loading profiles...
+            </div>
+        </div>
 
     <section
         id="electionSection"
@@ -954,6 +1135,8 @@
 
     let hasVoted = false;
 
+    let voterVerified = false;
+
     let realtimeChannel = null;
 
 
@@ -1007,12 +1190,6 @@
 
             button.innerHTML =
                 '<span class="google-icon">G</span> CONTINUE WITH GOOGLE';
-                document
-    .getElementById("googleLoginButton")
-    .addEventListener(
-        "click",
-        loginWithGoogle
-    );
 
         }
 
@@ -1029,30 +1206,137 @@
             return;
         }
 
-
-        currentUser =
-            session.user;
-
+        currentUser = session.user;
 
         document
             .getElementById("loginSection")
             .classList.add("hidden");
 
+        const registered = await checkVoterRegistration();
+
+        if (!registered) {
+            document
+                .getElementById("voterGate")
+                .classList.remove("hidden");
+
+            document
+                .getElementById("electionSection")
+                .classList.add("hidden");
+
+            return;
+        }
+
+        voterVerified = true;
+
+        document
+            .getElementById("voterGate")
+            .classList.add("hidden");
 
         document
             .getElementById("electionSection")
             .classList.remove("hidden");
 
-
         await loadCandidates();
-
+        await loadCandidateProfiles();
         await checkExistingVote();
-
         await loadResults();
-
         startRealtime();
-
     }
+
+
+    /* ==================================================
+       VOTER ID VERIFICATION
+       ================================================== */
+
+    const INSTITUTE_ID_REGEX = /^[A-Z]{5}-[0-9]{5}$/;
+
+    async function checkVoterRegistration() {
+
+        const { data, error } =
+            await supabaseClient
+                .from("voter_registrations")
+                .select("institute_id")
+                .eq("user_id", currentUser.id)
+                .maybeSingle();
+
+        if (error) {
+            console.error(error);
+            return false;
+        }
+
+        if (data) {
+            voterVerified = true;
+            return true;
+        }
+
+        return false;
+    }
+
+
+    async function registerInstituteId() {
+
+        const input =
+            document.getElementById("instituteId");
+
+        const message =
+            document.getElementById("voterMessage");
+
+        const button =
+            document.getElementById("verifyIdButton");
+
+        const instituteId =
+            input.value.trim().toUpperCase();
+
+        message.textContent = "";
+
+        if (!INSTITUTE_ID_REGEX.test(instituteId)) {
+            message.textContent =
+                "Invalid Institute ID. Use format ABCDE-12345.";
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "VERIFYING...";
+
+        const { error } =
+            await supabaseClient
+                .from("voter_registrations")
+                .insert({
+                    user_id: currentUser.id,
+                    institute_id: instituteId
+                });
+
+        if (error) {
+            console.error(error);
+
+            if (error.code === "23505") {
+                message.textContent =
+                    "This Institute ID or Google account is already registered.";
+            } else {
+                message.textContent =
+                    "Could not verify the ID. Please try again.";
+            }
+
+            button.disabled = false;
+            button.textContent = "VERIFY INSTITUTE ID";
+            return;
+        }
+
+        voterVerified = true;
+        message.textContent = "";
+
+        await showElection({
+            user: currentUser
+        });
+    }
+
+
+    document
+        .getElementById("verifyIdButton")
+        .addEventListener(
+            "click",
+            registerInstituteId
+        );
 
 
     /* ==================================================
@@ -1384,6 +1668,10 @@
 
     async function submitVote() {
 
+        if (!currentUser || !voterVerified || hasVoted || !selectedCandidate) {
+            return;
+        }
+
         const button =
             document.getElementById(
                 "voteButton"
@@ -1502,6 +1790,208 @@
 
 
     /* ==================================================
+       CANDIDATE PROFILES
+       ================================================== */
+
+    async function loadCandidateProfiles() {
+
+        const container =
+            document.getElementById("candidateProfiles");
+
+        const { data, error } =
+            await supabaseClient
+                .from("candidates")
+                .select("id, name, tagline, photo_url, about, skills, goals, user_id")
+                .order("id");
+
+        if (error) {
+            console.error(error);
+            container.textContent =
+                "Unable to load candidate profiles.";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        data.forEach(candidate => {
+
+            const initials =
+                candidate.name
+                    .split(" ")
+                    .map(word => word[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.className = "candidate-profile";
+
+            const photo = candidate.photo_url
+                ? `<img class="candidate-profile-photo" src="${escapeHTML(candidate.photo_url)}" alt="">`
+                : `<div class="candidate-profile-photo">${escapeHTML(initials)}</div>`;
+
+            wrapper.innerHTML = `
+                <div class="candidate-profile-head">
+                    ${photo}
+                    <div>
+                        <h3>${escapeHTML(candidate.name)}</h3>
+                        <p>${escapeHTML(candidate.tagline || "")}</p>
+                    </div>
+                </div>
+                ${candidate.about ? `<p><strong>About:</strong> ${escapeHTML(candidate.about)}</p>` : ""}
+                ${candidate.skills ? `<p><strong>Skills:</strong> ${escapeHTML(candidate.skills)}</p>` : ""}
+                ${candidate.goals ? `<p><strong>Goals:</strong> ${escapeHTML(candidate.goals)}</p>` : ""}
+            `;
+
+            if (candidate.user_id &&
+                currentUser &&
+                candidate.user_id === currentUser.id) {
+
+                const editor =
+                    document.createElement("div");
+
+                editor.className = "profile-editor";
+
+                editor.innerHTML = `
+                    <div class="field-label">EDIT YOUR CANDIDATE PROFILE</div>
+
+                    <label class="field-label" for="profileAbout-${candidate.id}">ABOUT ME</label>
+                    <textarea id="profileAbout-${candidate.id}" placeholder="Tell voters about yourself...">${escapeHTML(candidate.about || "")}</textarea>
+
+                    <label class="field-label" for="profileSkills-${candidate.id}" style="margin-top:12px;">LEADERSHIP / SKILLS</label>
+                    <textarea id="profileSkills-${candidate.id}" placeholder="Leadership skills, strengths, experience...">${escapeHTML(candidate.skills || "")}</textarea>
+
+                    <label class="field-label" for="profileGoals-${candidate.id}" style="margin-top:12px;">GOALS</label>
+                    <textarea id="profileGoals-${candidate.id}" placeholder="What do you want to do as CR?">${escapeHTML(candidate.goals || "")}</textarea>
+
+                    <label class="field-label" for="profilePhoto-${candidate.id}" style="margin-top:12px;">PROFILE PHOTO</label>
+                    <input id="profilePhoto-${candidate.id}" class="text-input" type="file" accept="image/png,image/jpeg,image/webp">
+
+                    <button class="primary-button" id="saveProfile-${candidate.id}" type="button">
+                        SAVE PROFILE
+                    </button>
+                    <div class="small-note">
+                        Only the candidate account linked to this candidate record can edit it. Choose a photo, then save.
+                    </div>
+                `;
+
+                wrapper.appendChild(editor);
+
+                editor
+                    .querySelector(`#saveProfile-${candidate.id}`)
+                    .addEventListener(
+                        "click",
+                        () => saveCandidateProfile(candidate.id)
+                    );
+            }
+
+            container.appendChild(wrapper);
+        });
+    }
+
+
+    async function saveCandidateProfile(candidateId) {
+
+        const about =
+            document.getElementById(`profileAbout-${candidateId}`).value.trim();
+
+        const skills =
+            document.getElementById(`profileSkills-${candidateId}`).value.trim();
+
+        const goals =
+            document.getElementById(`profileGoals-${candidateId}`).value.trim();
+
+        const photoInput =
+            document.getElementById(`profilePhoto-${candidateId}`);
+
+        const button =
+            document.getElementById(`saveProfile-${candidateId}`);
+
+        button.disabled = true;
+        button.textContent = "SAVING...";
+
+        let photo_url = null;
+
+        if (photoInput.files && photoInput.files[0]) {
+
+            const file = photoInput.files[0];
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Please choose an image smaller than 5 MB.");
+                button.disabled = false;
+                button.textContent = "SAVE PROFILE";
+                return;
+            }
+
+            const extension =
+                file.name.split(".").pop().toLowerCase();
+
+            const safeExtension =
+                ["jpg", "jpeg", "png", "webp"].includes(extension)
+                    ? extension
+                    : "jpg";
+
+            const path =
+                `${currentUser.id}/${candidateId}.${safeExtension}`;
+
+            const { error: uploadError } =
+                await supabaseClient.storage
+                    .from("candidate-photos")
+                    .upload(path, file, {
+                        upsert: true,
+                        contentType: file.type
+                    });
+
+            if (uploadError) {
+                console.error(uploadError);
+                alert("Photo upload failed. Please try again.");
+                button.disabled = false;
+                button.textContent = "SAVE PROFILE";
+                return;
+            }
+
+            const { data: publicData } =
+                supabaseClient.storage
+                    .from("candidate-photos")
+                    .getPublicUrl(path);
+
+            photo_url = publicData.publicUrl;
+        }
+
+        const updateData = {
+            about,
+            skills,
+            goals
+        };
+
+        if (photo_url) {
+            updateData.photo_url = photo_url;
+        }
+
+        const { error } =
+            await supabaseClient
+                .from("candidates")
+                .update(updateData)
+                .eq("id", candidateId)
+                .eq("user_id", currentUser.id);
+
+        if (error) {
+            console.error(error);
+            alert("Profile could not be saved.");
+            button.disabled = false;
+            button.textContent = "SAVE PROFILE";
+            return;
+        }
+
+        await loadCandidateProfiles();
+
+        alert("✓ Candidate profile saved.");
+    }
+
+
+    /* ==================================================
        LOAD LIVE RESULTS
        ================================================== */
 
@@ -1518,12 +2008,11 @@
 
 
         const {
-            data: votes,
+            data: voteCounts,
             error: voteError
         } =
             await supabaseClient
-                .from("votes")
-                .select("candidate_id");
+                .rpc("get_vote_counts");
 
 
         if (
@@ -1543,32 +2032,21 @@
 
         const counts = {};
 
-
         candidates.forEach(candidate => {
-
             counts[candidate.id] = 0;
-
         });
 
-
-        votes.forEach(vote => {
-
-            if (
-                counts[vote.candidate_id]
-                !== undefined
-            ) {
-
-                counts[
-                    vote.candidate_id
-                ]++;
-
+        (voteCounts || []).forEach(row => {
+            if (counts[row.candidate_id] !== undefined) {
+                counts[row.candidate_id] = Number(row.vote_count);
             }
-
         });
-
 
         const total =
-            votes.length;
+            Object.values(counts).reduce(
+                (sum, count) => sum + count,
+                0
+            );
 
 
         const sorted =
