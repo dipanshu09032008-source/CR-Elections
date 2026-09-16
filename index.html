@@ -987,9 +987,13 @@
         } =
             await supabaseClient.auth.signInWithOAuth({
 
-                provider: "google"
+    provider: "google",
 
-            });
+    options: {
+        redirectTo: "https://dipanshu09032008-source.github.io/CR-Elections/"
+    }
+
+});
 
 
         if (error) {
