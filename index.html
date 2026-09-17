@@ -1173,7 +1173,7 @@
     provider: "google",
 
     options: {
-        redirectTo: "https://dipanshu09032008-source.github.io/CR-Elections/"
+        redirectTo: window.location.origin + window.location.pathname
     }
 
 });
@@ -1253,11 +1253,9 @@
     async function checkVoterRegistration() {
 
         const { data, error } =
-            await supabaseClient
-                .from("voter_registrations")
-                .select("institute_id")
-                .eq("user_id", currentUser.id)
-                .maybeSingle();
+            await supabaseClient.rpc(
+                "get_my_voter_registration"
+            );
 
         if (error) {
             console.error(error);
@@ -1299,28 +1297,34 @@
         button.textContent = "VERIFYING...";
 
         const { error } =
-            await supabaseClient
-                .from("voter_registrations")
-                .insert({
-                    user_id: currentUser.id,
-                    institute_id: instituteId
-                });
+            await supabaseClient.rpc(
+                "register_voter",
+                { p_institute_id: instituteId }
+            );
 
         if (error) {
-            console.error(error);
+    console.error(error);
 
-            if (error.code === "23505") {
-                message.textContent =
-                    "This Institute ID or Google account is already registered.";
-            } else {
-                message.textContent =
-                    "Could not verify the ID. Please try again.";
-            }
+    const errorMessage = error.message || "";
 
-            button.disabled = false;
-            button.textContent = "VERIFY INSTITUTE ID";
-            return;
-        }
+    if (errorMessage.includes("already registered with another account")) {
+        message.textContent =
+            "This Institute ID is already registered with another Google account.";
+    } else if (errorMessage.includes("Invalid institute ID format")) {
+        message.textContent =
+            "Invalid Institute ID format. Use ABCDE-12345.";
+    } else if (error.code === "23505") {
+        message.textContent =
+            "This Institute ID or Google account is already registered.";
+    } else {
+        message.textContent =
+            "Could not verify the ID. Please try again.";
+    }
+
+    button.disabled = false;
+    button.textContent = "VERIFY INSTITUTE ID";
+    return;
+}
 
         voterVerified = true;
         message.textContent = "";
@@ -1687,17 +1691,10 @@
         const {
             error
         } =
-            await supabaseClient
-                .from("votes")
-                .insert({
-
-                    voter_id:
-                        currentUser.id,
-
-                    candidate_id:
-                        selectedCandidate
-
-                });
+            await supabaseClient.rpc(
+                "cast_vote",
+                { p_candidate_id: selectedCandidate }
+            );
 
 
         if (error) {
